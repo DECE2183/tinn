@@ -12,20 +12,20 @@ typedef struct
     // 2D floating point array of target.
     float** tg;
     // Number of inputs to neural network.
-    int nips;
+    int32_t nips;
     // Number of outputs to neural network.
-    int nops;
+    int32_t nops;
     // Number of rows in file (number of sets for neural network).
-    int rows;
+    int32_t rows;
 }
 Data;
 
 // Returns the number of lines in a file.
-static int lns(FILE* const file)
+static int32_t lns(FILE* const file)
 {
-    int ch = EOF;
-    int lines = 0;
-    int pc = '\n';
+    int32_t ch = EOF;
+    int32_t lines = 0;
+    int32_t pc = '\n';
     while((ch = getc(file)) != EOF)
     {
         if(ch == '\n')
@@ -41,9 +41,9 @@ static int lns(FILE* const file)
 // Reads a line from a file.
 static char* readln(FILE* const file)
 {
-    int ch = EOF;
-    int reads = 0;
-    int size = 128;
+    int32_t ch = EOF;
+    int32_t reads = 0;
+    int32_t size = 128;
     char* line = (char*) malloc((size) * sizeof(char));
     while((ch = getc(file)) != '\n' && ch != EOF)
     {
@@ -56,16 +56,16 @@ static char* readln(FILE* const file)
 }
 
 // New 2D array of floats.
-static float** new2d(const int rows, const int cols)
+static float** new2d(const int32_t rows, const int32_t cols)
 {
     float** row = (float**) malloc((rows) * sizeof(float*));
-    for(int r = 0; r < rows; r++)
+    for(int32_t r = 0; r < rows; r++)
         row[r] = (float*) malloc((cols) * sizeof(float));
     return row;
 }
 
 // New data object.
-static Data ndata(const int nips, const int nops, const int rows)
+static Data ndata(const int32_t nips, const int32_t nops, const int32_t rows)
 {
     const Data data = {
         new2d(rows, nips), new2d(rows, nops), nips, nops, rows
@@ -74,10 +74,10 @@ static Data ndata(const int nips, const int nops, const int rows)
 }
 
 // Gets one row of inputs and outputs from a string.
-static void parse(const Data data, char* line, const int row)
+static void parse(const Data data, char* line, const int32_t row)
 {
-    const int cols = data.nips + data.nops;
-    for(int col = 0; col < cols; col++)
+    const int32_t cols = data.nips + data.nops;
+    for(int32_t col = 0; col < cols; col++)
     {
         const float val = atof(strtok(col == 0 ? line : NULL, " "));
         if(col < data.nips)
@@ -90,7 +90,7 @@ static void parse(const Data data, char* line, const int row)
 // Frees a data object from the heap.
 static void dfree(const Data d)
 {
-    for(int row = 0; row < d.rows; row++)
+    for(int32_t row = 0; row < d.rows; row++)
     {
         free(d.in[row]);
         free(d.tg[row]);
@@ -102,9 +102,9 @@ static void dfree(const Data d)
 // Randomly shuffles a data object.
 static void shuffle(const Data d)
 {
-    for(int a = 0; a < d.rows; a++)
+    for(int32_t a = 0; a < d.rows; a++)
     {
-        const int b = rand() % d.rows;
+        const int32_t b = rand() % d.rows;
         float* ot = d.tg[a];
         float* it = d.in[a];
         // Swap output.
@@ -117,7 +117,7 @@ static void shuffle(const Data d)
 }
 
 // Parses file from path getting all inputs and outputs for the neural network. Returns data object.
-static Data build(const char* path, const int nips, const int nops)
+static Data build(const char* path, const int32_t nips, const int32_t nops)
 {
     FILE* file = fopen(path, "r");
     if(file == NULL)
@@ -127,9 +127,9 @@ static Data build(const char* path, const int nips, const int nops)
         printf("wget http://archive.ics.uci.edu/ml/machine-learning-databases/semeion/semeion.data\n");
         exit(1);
     }
-    const int rows = lns(file);
+    const int32_t rows = lns(file);
     Data data = ndata(nips, nops, rows);
-    for(int row = 0; row < rows; row++)
+    for(int32_t row = 0; row < rows; row++)
     {
         char* line = readln(file);
         parse(data, line, row);
@@ -140,32 +140,34 @@ static Data build(const char* path, const int nips, const int nops)
 }
 
 // Learns and predicts hand written digits with 98% accuracy.
-int main()
+int32_t main()
 {
     // Tinn does not seed the random number generator.
     srand(time(0));
     // Input and output size is harded coded here as machine learning
     // repositories usually don't include the input and output size in the data itself.
-    const int nips = 256;
-    const int nops = 10;
+    const int32_t nips = 256;
+    const int32_t nops = 10;
     // Hyper Parameters.
     // Learning rate is annealed and thus not constant.
     // It can be fine tuned along with the number of hidden layers.
     // Feel free to modify the anneal rate.
     // The number of iterations can be changed for stronger training.
     float rate = 1.0f;
-    const int nhid = 28;
+    const int32_t nhid = 28;
     const float anneal = 0.99f;
-    const int iterations = 128;
+    const int32_t iterations = 128;
     // Load the training set.
     const Data data = build("semeion.data", nips, nops);
     // Train, baby, train.
-    const Tinn tinn = xtbuild(nips, nhid, nops);
-    for(int i = 0; i < iterations; i++)
+    static const uint32_t net_size = 3;
+    static const uint32_t net_template[3] = {nips, nhid, nops};
+    const Tinn tinn = xtbuild(net_size, net_template);
+    for(int32_t i = 0; i < iterations; i++)
     {
         shuffle(data);
         float error = 0.0f;
-        for(int j = 0; j < data.rows; j++)
+        for(int32_t j = 0; j < data.rows; j++)
         {
             const float* const in = data.in[j];
             const float* const tg = data.tg[j];

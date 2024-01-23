@@ -1,3 +1,11 @@
+## Not so Tiny Neural Network
+
+I implemented ability to set up any layers count with any size. Added biases to each neuron and their correction during training (as I understand this mechanism according to the description from **satckoferflow**, so it may not work propperly). I also rewrote the save/load logic. Now it saves in binary format and doesn't open the file itself, it requers an alredy opened file as an argument.
+
+After these changes, the code did not fit into 200 lines (now 300 lines).
+
+# Tinn
+
 ![](img/logo.PNG)
 
 Tinn (Tiny Neural Network) is a 200 line dependency free neural network library written in C99.

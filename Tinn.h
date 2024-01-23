@@ -1,27 +1,22 @@
 #pragma once
 
+#include <stdio.h>
+#include <stdint.h>
+
 typedef struct
 {
-    // All the weights.
-    float* w;
-    // Hidden to output layer weights.
-    float* x;
-    // Biases.
-    float* b;
-    // Hidden layer.
-    float* h;
-    // Output layer.
-    float* o;
-    // Number of biases - always two - Tinn only supports a single hidden layer.
-    int nb;
-    // Number of weights.
-    int nw;
-    // Number of inputs.
-    int nips;
-    // Number of hidden neurons.
-    int nhid;
-    // Number of outputs.
-    int nops;
+    float  value;
+    float  bias;
+    float* weights;
+}
+neuron_t;
+
+typedef struct
+{
+    uint32_t   layers_count;
+    uint32_t*  layers_sizes;
+    neuron_t** neurons;
+    float*     output;
 }
 Tinn;
 
@@ -29,12 +24,12 @@ float* xtpredict(Tinn, const float* in);
 
 float xttrain(Tinn, const float* in, const float* tg, float rate);
 
-Tinn xtbuild(int nips, int nhid, int nops);
+Tinn xtbuild(const uint32_t layers_count, const uint32_t *layers_sizes);
 
-void xtsave(Tinn, const char* path);
+void xtsave(Tinn, FILE *const file);
 
-Tinn xtload(const char* path);
+Tinn xtload(FILE *const file);
 
 void xtfree(Tinn);
 
-void xtprint(const float* arr, const int size);
+void xtprint(const float* arr, const int32_t size);
